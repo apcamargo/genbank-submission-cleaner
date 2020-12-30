@@ -37,10 +37,10 @@ contaminant_intervals = defaultdict(list)
 with open(args.genbank_report) as fin:
     skip_line = True
     for line in fin:
+        if skip_line:
+            continue
         if line.startswith("Sequence name,"):
             skip_line = False
-        elif skip_line:
-            pass
         elif len(line) > 1:
             line = line.strip().split()
             contig = line[0]
@@ -61,19 +61,14 @@ with open(args.input_genome) as fin, open(output_genome_path, "w") as fout:
                     + sequence[interval[1] + 1 :]
                 )
             sequence = re.split("#+", sequence)
-            keep_substrings = []
-            for i in range(len(sequence)):
-                if len(sequence[i]) >= 200:
-                    keep_substrings.append(i)
+            keep_substrings = [i for i in range(len(sequence)) if len(sequence[i]) >= 200]
             if len(keep_substrings) > 1:
-                substrings_counter = 1
-                for substring_index in keep_substrings:
+                for substrings_counter, substring_index in enumerate(keep_substrings, start=1):
                     subsequence_name = record.description.split()
                     subsequence_name[0] = f"{subsequence_name[0]}_{substrings_counter}"
                     subsequence_name = "".join(subsequence_name)
                     fout.write(f">{subsequence_name}\n")
                     fout.write(f"{textwrap.fill(sequence[substring_index], 70)}\n")
-                    substrings_counter += 1
             else:
                 fout.write(f">{record.description}\n")
                 fout.write(f"{textwrap.fill(sequence[keep_substrings[0]], 70)}\n")
