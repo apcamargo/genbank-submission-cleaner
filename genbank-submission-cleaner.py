@@ -24,6 +24,9 @@ parser.add_argument(
 parser.add_argument("-h", "--help", action="help", help="Show this help message and exit")
 args = parser.parse_args()
 
+args.genbank_report = Path.cwd().joinpath(args.genbank_report)
+args.input_genome = Path.cwd().joinpath(args.input_genome)
+args.clean_genome_output = Path.cwd().joinpath(args.clean_genome_output)
 
 input_genome_basename = args.input_genome.name
 
@@ -37,10 +40,10 @@ contaminant_intervals = defaultdict(list)
 with open(args.genbank_report) as fin:
     skip_line = True
     for line in fin:
-        if skip_line:
-            continue
         if line.startswith("Sequence name,"):
             skip_line = False
+        elif skip_line:
+            pass
         elif len(line) > 1:
             line = line.strip().split()
             contig = line[0]
